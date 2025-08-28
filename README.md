@@ -1,235 +1,154 @@
-# Here’s a **straight, step-by-step plan** you can execute today, from raw logs to multiparty VoIP groups with ASN/ISP mapping and (optionally) a streaming API.
+# VoIP Meta Tracer
 
----
+An end-to-end Python project for analyzing VoIP metadata from packet captures without decrypting SRTP/TLS traffic.
 
-# 0) Prep
+## Features
 
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install pandas networkx fastapi uvicorn pydantic geoip2
-# Optional, for speed on big data: pip install polars
-# Optional ASN DB (free): set GEOIP2_ASN_DB=/path/to/GeoLite2-ASN.mmdb
-```
+- **Packet Analysis**: Extract SIP, RTP, and TLS/DTLS metadata from pcap files
+- **Call Grouping**: Group packets by call-id and SSRC for session reconstruction
+- **Anomaly Detection**: Use ML (IsolationForest) to detect suspicious call patterns
+- **Visualization**: Generate network graphs and export CSV reports
+- **REST API**: FastAPI endpoint for uploading pcaps and getting analysis results
+- **Live Capture**: Support for real-time packet analysis (pyshark.LiveCapture)
 
-**Repo skeleton**
+## Quick Start
 
-```
-project/
-	data/{cdr.csv, ipdr.csv}
-	cfg/rules.yaml
-	src/
-		schemas.py
-		load.py
-		enrich.py
-		heuristics.py
-		correlate.py
-		graph.py
-		cli.py
-		api.py   # optional streaming
-```
+### Prerequisites
 
----
+- Python 3.10+
+- tshark/Wireshark (for pyshark)
 
-# 1) Define data contracts (schemas)
-
-**CDR (csv/json)**
-
-* `subscriber: str`
-* `called: str`
-* `call_type: str`   (VOICE/SMS/etc.)
-* `start_time: ISO8601`
-* `end_time: ISO8601`
-
-**IPDR (csv/json)**
-
-* `subscriber: str`
-* `destination_ip: str`
-* `protocol: str`    (TCP/UDP)
-* `dst_port: int`
-* `start_time: ISO8601`
-* `end_time: ISO8601`
-
-**Acceptance check:** rows parse, times valid, `end_time ≥ start_time`.
-
----
-
-# 2) Load & validate
-
-* Implement `src/schemas.py` with Pydantic models `CDR`, `IPDR`.
-* Implement `src/load.py`:
-
-	* `load_cdr(path) -> pd.DataFrame`
-	* `load_ipdr(path) -> pd.DataFrame`
-	* Parse dates; drop bad rows; log counts.
-
-**Acceptance check:** `print(df.info())` shows correct dtypes; no NaTs.
-
----
-
-# 3) VoIP heuristics (metadata-only)
-
-Create `src/heuristics.py` with:
-
-* `is_voip_row(row) -> str|None` returning one of:
-
-	* `"SIP-Signaling"` if `dst_port == 5060 or 5061`
-	* `"RTP-Media"` if `16384 ≤ dst_port ≤ 32767`
-	* `"App-VoIP-443"` if `dst_port == 443 and protocol in {UDP,TCP}` (OTT tunneling)
-* Read optional allow/deny lists from `cfg/rules.yaml` (custom ports/IPs).
-
-**Acceptance check:** run on sample and see expected flags.
-
----
-
-# 4) ASN/ISP enrichment
-
-Create `src/enrich.py`:
-
-* `enrich_asn(df_ipdr) -> df_ipdr_enriched`
-	Uses `geoip2` and `GEOIP2_ASN_DB` to add:
-
-	* `asn: int`
-	* `as_org: str`
-
-**Acceptance check:** % rows with ASN > 0; log misses.
-
----
-
-# 5) Time-overlap correlation (CDR ↔ IPDR)
-
-Create `src/correlate.py`:
-
-* For each subscriber, **interval-join** their CDRs to IPDRs:
-
-	* Overlap rule: `not (ipdr.end ≤ cdr.start or cdr.end ≤ ipdr.start)`
-	* Output columns:
-
-		* `subscriber, called, call_type, cdr_start, cdr_end`
-		* `destination_ip, protocol, dst_port, ipdr_start, ipdr_end`
-		* `voip_flag, asn, as_org`
-* Optimize:
-
-	* Pre-group by `subscriber`.
-	* Sort by `start_time` and two-pointer sweep for O(n).
-
-**Acceptance check:** count of correlated pairs > 0; spot-check durations roughly align.
-
----
-
-# 6) Build the session graph (windowed)
-
-Create `src/graph.py`:
-
-* **Window**: choose `W = 5m` (configurable).
-* For each window:
-
-	* Nodes: `S:subscriber`, `I:destination_ip`, `A:asn`.
-	* Edges:
-
-		* `S —(uses)→ I` if correlated row within window and `voip_flag != None`.
-		* `I —(belongs_to)→ A` if ASN known.
-	* Edge weight = `w1*duration_overlap + w2*heuristic_score`.
-* Compute **connected components**; extract groups with `≥2` subscribers.
-
-**Acceptance check:** groups list like:
-
-```
-[ {window: "10:00–10:05", ip: "203.0.113.5", as_org: "Google", subscribers: ["A1","B1"]}, ... ]
-```
-
----
-
-# 7) Multiparty detection & scoring
-
-* For each component:
-
-	* `members = subscribers in component`
-	* `size >= 2` → multiparty candidate
-	* Score = `avg(edge_weight)` or simple:
-
-		* +2 if SIP present
-		* +1 if RTP present
-		* +1 if OTT-443 and AS in known-VoIP list
-		* +1 if |duration(cdr) − duration(ipdr)| ≤ 60s
-* Sort groups by score desc, then size desc.
-
-**Acceptance check:** top groups align with your expectations.
-
----
-
-# 8) Batch CLI (one command)
-
-Create `src/cli.py` to run the whole pipeline:
+### Installation
 
 ```bash
-python -m src.cli \
-	--cdr data/cdr.csv \
-	--ipdr data/ipdr.csv \
-	--window "5min" \
-	--out results/groups.jsonl
+git clone <repo-url>
+cd voip-meta-tracer
+pip install -r requirements.txt
 ```
 
-**CLI outputs**
+### Basic Usage
 
-* `results/correlated.parquet`
-* `results/groups.jsonl` (one JSON object per windowed cluster)
+```python
+from src import capture, parser, agg, analyze, viz
 
-**Acceptance check:** files created; non-empty.
+# Analyze a pcap file
+packets = list(capture.read_pcap("data/sample.pcap", limit=1000))
+calls = parser.attach_meta_from_raw_packets(packets)
+df = agg.calls_to_dataframe(calls)
+df = agg.add_derived_features(df)
+df = analyze.detect_anomalies(df)
 
----
+# Export results
+viz.export_csv(df, "out/calls.csv")
+graph = viz.build_call_graph(df)
+viz.plot_call_graph(graph, "out/graph.png")
+```
 
-# 9) Optional: Streaming API (FastAPI + WebSocket)
-
-* `src/api.py`:
-
-	* `POST /ingest/cdr`, `POST /ingest/ipdr` (batch JSON)
-	* ASN enrichment + heuristics on ingest
-	* Keep a sliding in-memory window (e.g., 15m)
-	* Recompute groups; push to `/ws` as live JSON
-
-**Run**
+### API Server
 
 ```bash
-uvicorn src.api:app --host 0.0.0.0 --port 8080
+# Start the API server
+python -m uvicorn src.api:app --host 0.0.0.0 --port 8000
+
+# Upload a pcap for analysis
+curl -X POST "http://localhost:8000/upload-pcap" \
+     -F "file=@sample.pcap" \
+     -F "limit=1000"
 ```
 
-**Acceptance check:** connect to `ws://localhost:8080/ws` and see `hello`, `heartbeat`, and updates after ingest.
+### Docker
 
----
+```bash
+# Build and run
+docker build -t voip-meta-tracer .
+docker run -p 8000:8000 voip-meta-tracer
 
-# 10) Verification (ground truth & QA)
+# Test
+curl http://localhost:8000/
+```
 
-* **Unit tests:** overlap logic, heuristic labels, ASN lookup stub.
-* **Golden dataset:** a few synthetic sessions:
+## Project Structure
 
-	* SIP→RTP pair → must cluster
-	* Two subs to same OTT IP:443 at same time → must cluster
-	* Non-overlapping sessions → must NOT cluster
-* **Metrics:** log precision/recall if you have labeled truth; otherwise log:
+```
+voip-meta-tracer/
+├── src/
+│   ├── capture.py    # Extract metadata from pcap/live traffic
+│   ├── parser.py     # Group packets by call, extract SDP/JA3
+│   ├── agg.py        # Convert to DataFrame, add features
+│   ├── analyze.py    # Anomaly detection with IsolationForest
+│   ├── viz.py        # CSV export, graph visualization
+│   └── api.py        # FastAPI endpoints
+├── tests/
+│   └── test_smoke.py # Basic integration tests
+├── data/             # Sample pcap files
+├── out/              # Output CSV and graphs
+├── requirements.txt
+├── Dockerfile
+└── .github/workflows/ci.yml
+```
 
-	* `% ipdr flagged voip`
-	* `% ipdr with asn resolved`
-	* `groups/hour`, top `as_org` by groups
+## Metadata Extracted
 
----
+### SIP Packets
+- Call-ID, From URI, To URI
+- SDP fingerprints (`a=fingerprint`)
+- Method, response codes
 
-# 11) Scale & hardening (as needed)
+### RTP Packets
+- SSRC, packet count, timestamps
+- Payload type, sequence numbers
 
-* Swap `pandas` for **Polars** or chunked reads.
-* Store sliding window in **Redis** with TTL.
-* Ingest via **Kafka**, consume with async FastAPI workers.
-* Persist correlated edges to **Parquet** for audit.
-* Add **allow/deny** lists in `cfg/rules.yaml` for quick tuning.
+### TLS/DTLS Packets
+- Handshake version
+- JA3 fingerprints (stub implementation)
+- Certificate metadata
 
----
+## Anomaly Detection
 
-## Deliverables you’ll have at the end
+The system flags calls as anomalous based on:
 
-* `correlated.parquet` — joined CDR↔IPDR with VoIP flags + ASN/ISP
-* `groups.jsonl` — time-windowed multiparty clusters
-* (Optional) Running **WebSocket API** streaming these groups in real time
+- **Statistical outliers**: Duration, packet count, byte volume
+- **Behavioral patterns**: 
+  - Short bursts (many packets, short duration)
+  - Missing RTP (SIP without media)
+  - High IP diversity (potential relay abuse)
+  - Off-hours activity
+  - Unusually large packets
 
----
+## Development
 
-If you want, I can generate the **CLI scaffold (files + runnable code)** matching this plan so you just drop your CSVs and run it.
-# VoIPTracer
+### Running Tests
+
+```bash
+# With pytest
+python -m pytest tests/ -v
+
+# Direct execution
+cd tests && python test_smoke.py
+```
+
+### Next Features
+
+- [ ] Live capture mode integration
+- [ ] GeoIP enrichment with `geoip2`
+- [ ] Web dashboard (React/Next.js)
+- [ ] Real JA3 fingerprinting
+- [ ] SDP parsing for media capabilities
+- [ ] RTCP analysis
+- [ ] Call quality metrics
+
+## API Endpoints
+
+- `GET /` - Health check
+- `POST /upload-pcap` - Upload pcap file for analysis
+- `POST /analyze-file` - Analyze existing file on server
+
+## Configuration
+
+Environment variables:
+- `PYTHONPATH` - Set to project root
+- `LOG_LEVEL` - Logging verbosity (default: INFO)
+
+## License
+
+MIT License - see LICENSE file for details.
