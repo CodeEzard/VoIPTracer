@@ -16,7 +16,8 @@ An end-to-end Python project for analyzing VoIP metadata from packet captures wi
 ### Prerequisites
 
 - Python 3.10+
-- tshark/Wireshark (for pyshark)
+- tshark/Wireshark (for pyshark packet analysis)
+- Git (for cloning the repository)
 
 ### Installation
 
