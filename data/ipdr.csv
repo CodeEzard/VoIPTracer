@@ -1,2 +1,0 @@
-subscriber,destination_ip,protocol,dst_port,start_time,end_time
-A,203.0.113.5,UDP,5060,2025-08-26T19:35:44,2025-08-26T19:36:09
