@@ -14,19 +14,26 @@ def read_pcap(path: str, limit: Optional[int] = None) -> Generator[Dict, None, N
     Yields:
         Dict with SIP/RTP/TLS metadata
     """
-    cap = pyshark.FileCapture(path, display_filter="sip or rtp or tls or dtls")
+    try:
+        cap = pyshark.FileCapture(path, display_filter="sip or rtp or tls or dtls")
+    except Exception as e:
+        print(f"Error opening pcap file {path}: {e}")
+        return
     
     count = 0
-    for pkt in cap:
-        if limit and count >= limit:
-            break
-            
-        meta = extract_meta(pkt)
-        if meta:
-            yield meta
-            count += 1
-    
-    cap.close()
+    try:
+        for pkt in cap:
+            if limit and count >= limit:
+                break
+                
+            meta = extract_meta(pkt)
+            if meta:
+                yield meta
+                count += 1
+    except Exception as e:
+        print(f"Error processing packet {count}: {e}")
+    finally:
+        cap.close()
 
 
 def read_live(iface: str = "eth0", limit: Optional[int] = None) -> Generator[Dict, None, None]:
