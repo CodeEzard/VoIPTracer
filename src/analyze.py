@@ -97,9 +97,12 @@ def flag_suspicious_patterns(df: pd.DataFrame) -> pd.DataFrame:
         return df
     
     # Short duration but many packets (potential scanning/probing)
-    duration_q75 = df['duration_s'].quantile(0.75)
-    pkts_q75 = df['total_pkts'].quantile(0.75)
-    df['flag_short_burst'] = (df['duration_s'] < duration_q75 * 0.1) & (df['total_pkts'] > pkts_q75)
+    if len(df) > 1:  # Only apply if we have multiple calls for comparison
+        duration_q75 = df['duration_s'].quantile(0.75)
+        pkts_q75 = df['total_pkts'].quantile(0.75)
+        df['flag_short_burst'] = (df['duration_s'] < duration_q75 * 0.1) & (df['total_pkts'] > pkts_q75)
+    else:
+        df['flag_short_burst'] = False
     
     # SIP calls with no RTP (incomplete/failed calls)
     df['flag_no_rtp'] = (df['sip_pkts'] > 0) & (df['rtp_pkts'] == 0) & (df['duration_s'] > 5)
