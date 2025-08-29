@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  voip-tracer:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./out:/app/out
+    environment:
+      - PYTHONPATH=/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # Optional: Add a data volume for persistent storage
+volumes:
+  voip_data:
+    driver: local

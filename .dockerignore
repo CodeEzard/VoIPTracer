@@ -1,0 +1,21 @@
+# Docker ignore file for VoIP Tracer
+.git
+.gitignore
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.coverage
+*.log
+*.csv
+*.json
+out/
+data/
+README.md
+CHANGELOG.md
+LICENSE
+.github/
+*.md
+voip-meta-tracer/
