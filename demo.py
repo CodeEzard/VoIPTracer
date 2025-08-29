@@ -160,7 +160,7 @@ def demo_voip_analysis():
     # Build call graph
     print("\n6. Building call relationship graph...")
     try:
-        graph = viz.build_call_graph(calls)
+        graph = viz.build_call_graph(df_flagged)
         print(f"   🕸️  Graph: {len(graph.nodes)} nodes, {len(graph.edges)} edges")
         
         # Show some graph stats
