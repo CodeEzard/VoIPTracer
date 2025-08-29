@@ -1,31 +1,15 @@
 """FastAPI endpoint for uploading pcaps and running analysis."""
 
 from fastapi import FastAPI, File, UploadFile, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import tempfile
 import os
-import asyncio
-import sys
 from pathlib import Path
 from typing import Dict, Any
-
-# Fix for event loop issues on Windows
-if sys.platform == "win32":
-    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 from . import capture, parser, agg, analyze, viz
 
 app = FastAPI(title="VoIP Meta Tracer", version="1.0.0")
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000", "http://127.0.0.1:5173"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 @app.get("/")
@@ -157,72 +141,60 @@ def run_analysis_pipeline(pcap_path: str, limit: int = 1000) -> Dict[str, Any]:
     Returns:
         Dict with analysis results
     """
-    try:
-        # Step 1: Capture metadata
-        raw_packets = list(capture.read_pcap(pcap_path, limit=limit))
-        
-        if not raw_packets:
-            return {
-                "status": "no_voip_packets",
-                "message": "No VoIP packets found in pcap",
-                "calls": [],
-                "summary": {"total_calls": 0, "anomalies": 0, "anomaly_rate": 0.0}
-            }
-        
-        # Step 2: Parse and group by call
-        calls = parser.attach_meta_from_raw_packets(raw_packets)
-        
-        # Step 3: Convert to DataFrame
-        df = agg.calls_to_dataframe(calls)
-        if df.empty:
-            return {
-                "status": "no_calls",
-                "message": "No complete calls found",
-                "calls": [],
-                "summary": {"total_calls": 0, "anomalies": 0, "anomaly_rate": 0.0}
-            }
-        
-        # Step 4: Add features and filter
-        df = agg.add_derived_features(df)
-        df = agg.filter_calls(df)
-        
-        # Step 5: Anomaly detection
-        df = analyze.detect_anomalies(df)
-        df = analyze.flag_suspicious_patterns(df)
-        anomaly_summary = analyze.summarize_anomalies(df)
-        
-        # Step 6: Export results (optional - for API we just return JSON)
-        # viz.export_csv(df, "out/api_results.csv")
-        
-        # Convert DataFrame to JSON-serializable format
-        calls_json = df.to_dict('records')
-        
-        # Build graph for statistics
-        try:
-            graph = viz.build_call_graph(df)
-            graph_stats = {
-                "nodes": len(graph.nodes),
-                "edges": len(graph.edges),
-                "components": len(list(graph.connected_components())) if graph.nodes else 0
-            }
-        except Exception as e:
-            print(f"Warning: Graph building failed: {e}")
-            graph_stats = {"nodes": 0, "edges": 0, "components": 0}
-        
+    # Step 1: Capture metadata
+    raw_packets = list(capture.read_pcap(pcap_path, limit=limit))
+    
+    if not raw_packets:
         return {
-            "status": "success",
-            "calls": calls_json,
-            "summary": anomaly_summary,
-            "graph_stats": graph_stats,
-            "packets_processed": len(raw_packets)
+            "status": "no_voip_packets",
+            "message": "No VoIP packets found in pcap",
+            "calls": [],
+            "summary": {"total_calls": 0, "anomalies": 0, "anomaly_rate": 0.0}
         }
-        
-    except Exception as e:
-        # More detailed error information
-        import traceback
-        error_details = traceback.format_exc()
-        print(f"Pipeline error: {error_details}")
-        raise Exception(f"Analysis pipeline failed: {str(e)}")
+    
+    # Step 2: Parse and group by call
+    calls = parser.attach_meta_from_raw_packets(raw_packets)
+    
+    # Step 3: Convert to DataFrame
+    df = agg.calls_to_dataframe(calls)
+    if df.empty:
+        return {
+            "status": "no_calls",
+            "message": "No complete calls found",
+            "calls": [],
+            "summary": {"total_calls": 0, "anomalies": 0, "anomaly_rate": 0.0}
+        }
+    
+    # Step 4: Add features and filter
+    df = agg.add_derived_features(df)
+    df = agg.filter_calls(df)
+    
+    # Step 5: Anomaly detection
+    df = analyze.detect_anomalies(df)
+    df = analyze.flag_suspicious_patterns(df)
+    anomaly_summary = analyze.summarize_anomalies(df)
+    
+    # Step 6: Export results (optional - for API we just return JSON)
+    # viz.export_csv(df, "out/api_results.csv")
+    
+    # Convert DataFrame to JSON-serializable format
+    calls_json = df.to_dict('records')
+    
+    # Build graph for statistics
+    graph = viz.build_call_graph(df)
+    graph_stats = {
+        "nodes": len(graph.nodes),
+        "edges": len(graph.edges),
+        "components": len(list(graph.connected_components())) if graph.nodes else 0
+    }
+    
+    return {
+        "status": "success",
+        "calls": calls_json,
+        "summary": anomaly_summary,
+        "graph_stats": graph_stats,
+        "packets_processed": len(raw_packets)
+    }
 
 
 if __name__ == "__main__":

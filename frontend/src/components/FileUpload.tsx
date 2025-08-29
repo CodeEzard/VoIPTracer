@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
-import { Upload, FileType, AlertCircle, Loader2 } from 'lucide-react';
-import axios from 'axios';
+import { Upload, FileType, AlertCircle, Loader2, Play } from 'lucide-react';
+import { uploadPcapFile, runDemo } from '../services/api';
 
 interface FileUploadProps {
   onAnalysisComplete: (results: any) => void;
@@ -16,8 +16,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  const API_BASE_URL = 'http://localhost:8000';
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -64,26 +62,36 @@ const FileUpload: React.FC<FileUploadProps> = ({
     setError(null);
 
     try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-
-      const response = await axios.post(`${API_BASE_URL}/upload-pcap`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        timeout: 300000, // 5 minute timeout
-      });
-
-      onAnalysisComplete(response.data);
+      const result = await uploadPcapFile(selectedFile);
+      
+      if (result.success) {
+        onAnalysisComplete(result.data);
+      } else {
+        setError(result.error || 'Upload failed');
+      }
     } catch (err: any) {
       console.error('Upload error:', err);
-      if (err.code === 'ECONNREFUSED') {
-        setError('Cannot connect to VoIP Tracer API. Please ensure the backend is running on http://localhost:8000');
-      } else if (err.response?.status === 413) {
-        setError('File too large. Please select a smaller PCAP file.');
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleDemo = async () => {
+    setIsAnalyzing(true);
+    setError(null);
+
+    try {
+      const result = await runDemo();
+      
+      if (result.success) {
+        onAnalysisComplete(result.data);
       } else {
-        setError(err.response?.data?.detail || 'Failed to analyze PCAP file. Please try again.');
+        setError(result.error || 'Demo failed');
       }
+    } catch (err: any) {
+      console.error('Demo error:', err);
+      setError('Demo analysis failed. Please ensure the backend is running.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -153,7 +161,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         )}
 
         {/* Upload Button */}
-        <div className="mt-6">
+        <div className="mt-6 space-y-3">
           <button
             onClick={handleUpload}
             disabled={!selectedFile || isAnalyzing}
@@ -174,6 +182,20 @@ const FileUpload: React.FC<FileUploadProps> = ({
                 Analyze PCAP File
               </>
             )}
+          </button>
+
+          {/* Demo Button */}
+          <button
+            onClick={handleDemo}
+            disabled={isAnalyzing}
+            className={`w-full flex items-center justify-center px-4 py-3 border border-gray-300 text-sm font-medium rounded-md shadow-sm transition-colors ${
+              !isAnalyzing
+                ? 'text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                : 'text-gray-500 bg-gray-100 cursor-not-allowed'
+            }`}
+          >
+            <Play className="h-4 w-4 mr-2" />
+            Try Demo Analysis
           </button>
         </div>
 
