@@ -9,6 +9,10 @@ __pycache__/
 .idea/
 .vscode/
 
+# PCAP files
+*.pcap
+*.pcapng
+
 # Node.js
 node_modules/
 npm-debug.log*
