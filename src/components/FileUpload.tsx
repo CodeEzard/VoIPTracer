@@ -34,24 +34,44 @@ const FileUpload: React.FC<FileUploadProps> = ({
     
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
-      if (file.name.endsWith('.pcap') || file.name.endsWith('.pcapng')) {
-        setSelectedFile(file);
-        setError(null);
-      } else {
+      
+      // Check file extension
+      if (!file.name.endsWith('.pcap') && !file.name.endsWith('.pcapng')) {
         setError('Please select a .pcap or .pcapng file');
+        return;
       }
+      
+      // Check file size (50MB limit)
+      const maxSize = 50 * 1024 * 1024; // 50MB
+      if (file.size > maxSize) {
+        setError(`File too large. Maximum size is 50MB, selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
+        return;
+      }
+      
+      setSelectedFile(file);
+      setError(null);
     }
   }, []);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      if (file.name.endsWith('.pcap') || file.name.endsWith('.pcapng')) {
-        setSelectedFile(file);
-        setError(null);
-      } else {
+      
+      // Check file extension
+      if (!file.name.endsWith('.pcap') && !file.name.endsWith('.pcapng')) {
         setError('Please select a .pcap or .pcapng file');
+        return;
       }
+      
+      // Check file size (50MB limit)
+      const maxSize = 50 * 1024 * 1024; // 50MB
+      if (file.size > maxSize) {
+        setError(`File too large. Maximum size is 50MB, selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
+        return;
+      }
+      
+      setSelectedFile(file);
+      setError(null);
     }
   };
 
@@ -227,8 +247,9 @@ const FileUpload: React.FC<FileUploadProps> = ({
         {/* Instructions */}
         <div className="mt-6 text-xs text-gray-500 space-y-1">
           <p>• Supported formats: .pcap, .pcapng</p>
-          <p>• Maximum file size: 100MB</p>
+          <p>• Maximum file size: 50MB (Vercel serverless limit)</p>
           <p>• Analysis includes: Call detection, anomaly detection, metadata extraction</p>
+          <p>• For large files (&gt;10MB), analysis may take longer</p>
         </div>
       </div>
     </div>
