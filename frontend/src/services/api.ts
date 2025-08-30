@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Use environment variable for production deployment
-const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : 'http://localhost:8002');
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : '/api');
 
 export interface ApiResponse {
   success: boolean;

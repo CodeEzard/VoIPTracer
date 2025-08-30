@@ -1,0 +1,12 @@
+{
+  "name": "voip-tracer",
+  "version": "1.0.0",
+  "description": "VoIP Meta Tracer - Full-stack deployment on Vercel",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "dev": "cd frontend && npm run dev"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
