@@ -9,10 +9,19 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ results, onViewResults }) => {
   if (!results) {
     return (
-      <div className="text-center py-12">
-        <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-        <h2 className="text-xl font-medium text-gray-900 mb-2">No Analysis Data</h2>
-        <p className="text-gray-600">Upload a PCAP file to see analysis results</p>
+      <div className="text-center py-20">
+        <div className="relative">
+          <div className="absolute inset-0 bg-neutral-800/40 rounded-full blur-3xl"></div>
+          <div className="relative w-24 h-24 terminal-window rounded-2xl flex items-center justify-center mx-auto mb-6 network-node">
+            <Activity className="h-12 w-12 text-blue-400" />
+          </div>
+        </div>
+        <h2 className="text-3xl font-bold cyber-text font-mono mb-4 tracking-wide">
+          NO ANALYSIS DATA
+        </h2>
+  <p className="text-xl text-gray-400 max-w-md mx-auto leading-relaxed font-mono">
+          DEPLOY PCAP FILES TO UNLOCK NETWORK SECURITY INTELLIGENCE
+        </p>
       </div>
     );
   }
@@ -59,79 +68,106 @@ const Dashboard: React.FC<DashboardProps> = ({ results, onViewResults }) => {
     }
   ];
 
-  const getColorClasses = (color: string) => {
-    const colors = {
-      blue: 'bg-blue-50 border-blue-200 text-blue-800',
-      red: 'bg-red-50 border-red-200 text-red-800',
-      green: 'bg-green-50 border-green-200 text-green-800',
-      purple: 'bg-purple-50 border-purple-200 text-purple-800'
-    };
-    return colors[color as keyof typeof colors] || colors.blue;
-  };
-
-  const getIconColor = (color: string) => {
-    const colors = {
-      blue: 'text-blue-600',
-      red: 'text-red-600',
-      green: 'text-green-600',
-      purple: 'text-purple-600'
-    };
-    return colors[color as keyof typeof colors] || colors.blue;
-  };
-
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fadeIn">
+      {/* Header Section */}
+      <div className="text-center mb-12">
+        <h2 className="text-4xl font-bold cyber-text font-mono mb-4 tracking-wide">
+          NETWORK ANALYSIS DASHBOARD
+        </h2>
+  <p className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed font-mono">
+          COMPREHENSIVE VOIP TRAFFIC MONITORING WITH REAL-TIME THREAT DETECTION AND ADVANCED PATTERN RECOGNITION
+        </p>
+      </div>
+
       {/* Overview Stats */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Analysis Dashboard</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {statCards.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <div
-                key={index}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-              >
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {statCards.map((stat, index) => {
+          const Icon = stat.icon;
+          return (
+            <div
+              key={index}
+              className="cyber-glass rounded-2xl p-6 shadow-lg border border-neutral-700 relative overflow-hidden group"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              {/* Background circuit pattern */}
+              <div className={`absolute inset-0 circuit-board opacity-5 ${
+                stat.color === 'blue' ? 'from-blue-400 to-blue-600' :
+                stat.color === 'red' ? 'from-red-400 to-red-600' :
+                stat.color === 'purple' ? 'from-purple-400 to-purple-600' :
+                'from-gray-400 to-gray-600'
+              }`}></div>
+              
+              <div className="relative z-10">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
+                  <div className="flex-1">
+                    <p className={`text-sm font-bold uppercase tracking-wider font-mono ${
+                      stat.color === 'blue' ? 'text-blue-300' :
+                      stat.color === 'red' ? 'text-red-300' :
+                      stat.color === 'purple' ? 'text-purple-300' :
+                      'text-gray-400'
+                    }`}>{stat.title}</p>
+                    <p className={`text-3xl font-bold mt-2 font-mono ${
+                      stat.color === 'blue' ? 'text-blue-400' :
+                      stat.color === 'red' ? 'text-red-400' :
+                      stat.color === 'purple' ? 'text-purple-400' :
+                      'text-gray-200'
+                    }`}>{stat.value}</p>
                   </div>
-                  <div className={`p-3 rounded-lg ${getColorClasses(stat.color)}`}>
-                    <Icon className={`h-6 w-6 ${getIconColor(stat.color)}`} />
+                  <div className={`p-4 rounded-2xl terminal-window border ${
+                    stat.color === 'blue' ? 'border-blue-400 bg-blue-400/20' :
+                    stat.color === 'red' ? 'border-red-400 bg-red-400/20' :
+                    stat.color === 'purple' ? 'border-purple-400 bg-purple-400/20' :
+                    'border-gray-400 bg-gray-400/20'
+                  } transition-transform duration-300 network-node`}>
+                    <Icon className={`h-8 w-8 ${
+                      stat.color === 'blue' ? 'text-blue-400' :
+                      stat.color === 'red' ? 'text-red-400' :
+                      stat.color === 'purple' ? 'text-purple-400' :
+                      'text-gray-400'
+                    }`} />
                   </div>
                 </div>
-                <div className="mt-4">
-                  <span className={`text-sm font-medium ${
-                    stat.color === 'red' ? 'text-red-600' : 'text-green-600'
+                <div className="mt-6 flex items-center">
+                  <span className={`text-sm font-bold px-3 py-1 rounded-full font-mono uppercase tracking-wide ${
+                    stat.color === 'red' ? 'text-red-400 bg-red-400/20 border border-red-400/30' :
+                    stat.color === 'blue' ? 'text-blue-400 bg-blue-400/20 border border-blue-400/30' :
+                    stat.color === 'purple' ? 'text-purple-400 bg-purple-400/20 border border-purple-400/30' :
+                    'text-gray-400 bg-gray-400/20 border border-gray-400/30'
                   }`}>
                     {stat.change}
                   </span>
-                  <span className="text-sm text-gray-600 ml-1">from baseline</span>
+                  <span className="text-sm text-gray-400 ml-2 font-mono">FROM BASELINE</span>
                 </div>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Anomaly Alert */}
       {anomalyCount > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+        <div className="cyber-glass rounded-2xl p-8 border border-red-400 bg-red-400/10 backdrop-blur-sm">
           <div className="flex items-start">
-            <AlertTriangle className="h-6 w-6 text-red-600 mt-1 mr-4 flex-shrink-0" />
-            <div className="flex-1">
-              <h3 className="text-lg font-medium text-red-800">
-                {anomalyCount} Anomal{anomalyCount === 1 ? 'y' : 'ies'} Detected
+            <div className="flex-shrink-0">
+              <div className="w-14 h-14 bg-red-400/20 rounded-2xl flex items-center justify-center border border-red-400">
+                <AlertTriangle className="h-8 w-8 text-red-400" />
+              </div>
+            </div>
+            <div className="ml-6 flex-1">
+              <h3 className="text-2xl font-bold text-red-400 mb-2 font-mono uppercase tracking-wide">
+                {anomalyCount} THREAT{anomalyCount === 1 ? '' : 'S'} DETECTED
               </h3>
-              <p className="text-red-700 mt-1">
-                {anomalyRate.toFixed(1)}% of calls show suspicious patterns. Review the detailed results for more information.
+              <p className="text-red-300 text-lg leading-relaxed mb-4 font-mono">
+                {anomalyRate.toFixed(1)}% OF TRAFFIC SHOWS SUSPICIOUS PATTERNS REQUIRING IMMEDIATE INVESTIGATION. 
+                SECURITY AI HAS IDENTIFIED POTENTIAL NETWORK INTRUSIONS.
               </p>
               <button
                 onClick={onViewResults}
-                className="mt-3 inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                className="inline-flex items-center px-6 py-3 cyber-button font-mono uppercase tracking-wide transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-red-400/50"
               >
-                View Detailed Results
+                <TrendingUp className="h-5 w-5 mr-2" />
+                INVESTIGATE THREATS
               </button>
             </div>
           </div>
@@ -139,51 +175,65 @@ const Dashboard: React.FC<DashboardProps> = ({ results, onViewResults }) => {
       )}
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="cyber-glass rounded-2xl p-8 border border-blue-400/30 backdrop-blur-sm">
+        <h3 className="text-2xl font-bold text-blue-400 mb-6 flex items-center font-mono uppercase tracking-wide">
+          <div className="w-8 h-8 bg-blue-400/20 rounded-lg flex items-center justify-center mr-3 border border-blue-400">
+            <TrendingUp className="h-5 w-5 text-blue-400" />
+          </div>
+          TACTICAL OPERATIONS
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <button
             onClick={onViewResults}
-            className="flex items-center justify-center px-4 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="flex items-center justify-center px-8 py-4 cyber-button font-mono uppercase tracking-wide transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-400/50"
           >
-            <TrendingUp className="h-4 w-4 mr-2" />
-            View Detailed Analysis
+            <TrendingUp className="h-6 w-6 mr-3" />
+            DETAILED ANALYSIS
           </button>
           <button
             onClick={() => {
-              // Export functionality would go here
               alert('Export functionality coming soon!');
             }}
-            className="flex items-center justify-center px-4 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="flex items-center justify-center px-8 py-4 border-2 border-dashed border-blue-400 text-blue-400 font-bold rounded-xl bg-blue-400/10 hover:bg-blue-400/20 hover:border-blue-300 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-400/50 font-mono uppercase tracking-wide"
           >
-            <Users className="h-4 w-4 mr-2" />
-            Export Results
+            <Users className="h-6 w-6 mr-3" />
+            EXPORT DATA
           </button>
         </div>
       </div>
 
       {/* Recent Activity Summary */}
       {results.calls && results.calls.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Call Summary</h3>
-          <div className="space-y-3">
+        <div className="cyber-glass rounded-2xl p-8 border border-blue-400/30 backdrop-blur-sm">
+          <h3 className="text-2xl font-bold text-blue-400 mb-6 flex items-center font-mono uppercase tracking-wide">
+            <div className="w-8 h-8 bg-blue-400/20 rounded-lg flex items-center justify-center mr-3 border border-blue-400">
+              <Phone className="h-5 w-5 text-blue-400" />
+            </div>
+            RECENT NETWORK ACTIVITY
+          </h3>
+          <div className="space-y-4">
             {results.calls.slice(0, 5).map((call: any, index: number) => (
-              <div key={index} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+              <div key={index} className="flex items-center justify-between p-4 terminal-window rounded-xl border border-blue-400/30 transition-all duration-300">
                 <div className="flex items-center">
-                  <div className={`w-2 h-2 rounded-full mr-3 ${
-                    call.is_anomaly ? 'bg-red-500' : 'bg-green-500'
+                  <div className={`w-4 h-4 rounded-full mr-4 ${
+                    call.is_anomaly ? 'status-danger' : 'bg-blue-400'
                   }`}></div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{call.call_id || `Call ${index + 1}`}</p>
-                    <p className="text-xs text-gray-500">
-                      {call.total_pkts} packets • {call.duration_s?.toFixed(1)}s duration
+                    <p className="font-bold text-blue-400 font-mono">{call.call_id || `CALL_${index + 1}`}</p>
+                    <p className="text-sm text-gray-400 font-mono">
+                      {call.total_pkts} PACKETS  {call.duration_s?.toFixed(1)}S DURATION
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  {call.is_anomaly && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                      Anomaly
+                  {!call.is_anomaly && (
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-blue-400/20 text-blue-400 border border-blue-400 font-mono uppercase tracking-wide">
+                       SECURE
+                    </span>
+                  )}
+                  {!call.is_anomaly && (
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-green-400/20 text-green-400 border border-green-400 font-mono uppercase tracking-wide">
+                      ✅ SECURE
                     </span>
                   )}
                 </div>

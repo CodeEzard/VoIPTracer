@@ -1,3 +1,67 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+/* Subtle network background */
+/* Minimalistic dark background */
+.network-bg {
+  background: #181a1b;
+  background-image: none;
+}
+
+/* Card and glass effect */
+.cyber-glass {
+  background: #202225;
+  border: 1px solid #23272b;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  backdrop-filter: none;
+}
+
+.terminal-window {
+  background: #202225;
+  border: 1.5px solid #23272b;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* Status indicators */
+.status-secure {
+  background: #23272b;
+  border: 1px solid #3b82f6;
+}
+.status-danger {
+  background: #2b2322;
+  border: 1px solid #ef4444;
+}
+
+/* Minimal heading text */
+.cyber-text {
+  color: #e5e7eb;
+  font-family: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+  letter-spacing: 0.01em;
+}
+
+/* Minimal button styles */
+.cyber-button {
+  background: #23272b;
+  border: 1.5px solid #31343a;
+  color: #e5e7eb;
+  font-family: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+}
+.cyber-button:hover {
+  background: #181a1b;
+  color: #60a5fa;
+  border-color: #3b82f6;
+}
+
+/* Subtle hover effect */
+.cyber-hover {
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.cyber-hover:hover {
+  box-shadow: 0 4px 24px rgba(59,130,246,0.08);
+  transform: translateY(-2px);
+}

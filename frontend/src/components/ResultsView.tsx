@@ -48,7 +48,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ results }) => {
     if (call.is_anomaly) {
       return <AlertTriangle className="h-4 w-4 text-red-500" />;
     }
-    return <CheckCircle className="h-4 w-4 text-green-500" />;
+    return <CheckCircle className="h-4 w-4 text-blue-500" />;
   };
 
   const getStatusBadge = (call: any) => {
@@ -60,7 +60,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ results }) => {
       );
     }
     return (
-      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
         Normal
       </span>
     );
@@ -193,7 +193,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ results }) => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className={`text-sm font-medium ${
-                      call.anomaly_score > 0 ? 'text-red-600' : 'text-green-600'
+                      call.anomaly_score > 0 ? 'text-red-600' : 'text-blue-600'
                     }`}>
                       {call.anomaly_score?.toFixed(3) || '0.000'}
                     </div>
@@ -226,7 +226,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ results }) => {
               <div className="text-sm text-gray-600">Anomalies</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{results.stats.total_packets?.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-blue-600">{results.stats.total_packets?.toLocaleString()}</div>
               <div className="text-sm text-gray-600">Total Packets</div>
             </div>
             <div className="text-center">

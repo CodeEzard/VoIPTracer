@@ -41,14 +41,27 @@ function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen network-bg relative overflow-hidden">
+  {/* No grid, just minimal background */}
+      
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+  <header className="cyber-glass border-b border-neutral-800 relative z-10 shadow-2xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
-              <Activity className="h-8 w-8 text-blue-600 mr-3" />
-              <h1 className="text-2xl font-bold text-gray-900">VoIP Meta Tracer</h1>
+              <div className="relative mr-4">
+                <div className="w-12 h-12 bg-neutral-800 rounded-lg flex items-center justify-center">
+                  <Activity className="h-7 w-7 text-gray-300" />
+                </div>
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold cyber-text font-mono tracking-wide">
+                  VoIP META TRACER
+                </h1>
+                <p className="text-sm text-gray-400 mt-1 font-mono">
+                  ADVANCED NETWORK SECURITY ANALYSIS PLATFORM
+                </p>
+              </div>
             </div>
             <ConnectionStatus onConnectionChange={setIsApiConnected} />
           </div>
@@ -56,9 +69,9 @@ function App() {
       </header>
 
       {/* Navigation */}
-      <nav className="bg-white border-b">
+  <nav className="cyber-glass border-b border-neutral-800 sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
+          <div className="flex space-x-1">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
@@ -66,14 +79,19 @@ function App() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
                   disabled={!isApiConnected && tab.id !== 'upload'}
-                  className={`flex items-center px-3 py-4 text-sm font-medium border-b-2 transition-colors ${
+                  className={`flex items-center px-6 py-4 text-sm font-mono font-bold uppercase tracking-wider border-b-3 transition-all duration-300 relative overflow-hidden group ${
                     activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-gray-400 text-gray-100 bg-neutral-800'
+                      : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-neutral-700 hover:border-gray-600'
                   } ${!isApiConnected && tab.id !== 'upload' ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  <Icon className="h-4 w-4 mr-2" />
-                  {tab.label}
+                  {/* No colored hover background */}
+                  <Icon className="h-5 w-5 mr-3 relative z-10" />
+                  <span className="relative z-10">{tab.label}</span>
+                  {activeTab === tab.id && (
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-400 rounded-t-full"></div>
+                  )}
+                  <div className="data-flow absolute top-0 left-0 right-0 h-px"></div>
                 </button>
               );
             })}
@@ -82,39 +100,53 @@ function App() {
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'upload' && (
-          <FileUpload 
-            onAnalysisComplete={handleAnalysisComplete}
-            isAnalyzing={isAnalyzing}
-            setIsAnalyzing={setIsAnalyzing}
-          />
-        )}
-        
-        {activeTab === 'dashboard' && (
-          <Dashboard 
-            results={analysisResults}
-            onViewResults={() => setActiveTab('results')}
-          />
-        )}
-        
-        {activeTab === 'results' && (
-          <ResultsView results={analysisResults} />
-        )}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+        <div className="animate-fadeIn">
+          {activeTab === 'upload' && (
+            <div className="transform transition-all duration-500 ease-out">
+              <FileUpload 
+                onAnalysisComplete={handleAnalysisComplete}
+                isAnalyzing={isAnalyzing}
+                setIsAnalyzing={setIsAnalyzing}
+              />
+            </div>
+          )}
+          
+          {activeTab === 'dashboard' && (
+            <div className="transform transition-all duration-500 ease-out">
+              <Dashboard 
+                results={analysisResults}
+                onViewResults={() => setActiveTab('results')}
+              />
+            </div>
+          )}
+          
+          {activeTab === 'results' && (
+            <div className="transform transition-all duration-500 ease-out">
+              <ResultsView results={analysisResults} />
+            </div>
+          )}
+        </div>
       </main>
 
       {/* Status Bar */}
-      <footer className="bg-white border-t mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex justify-between items-center text-sm text-gray-500">
-            <div>
+  <footer className="cyber-glass border-t border-neutral-800 mt-auto relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex justify-between items-center text-sm font-mono">
+            <div className="flex items-center space-x-4">
               {analysisResults && (
-                <span>
-                  Last Analysis: {(analysisResults.stats?.total_calls || analysisResults.summary?.total_calls || 0)} calls, {(analysisResults.stats?.anomaly_count || analysisResults.summary?.anomalies || 0)} anomalies
-                </span>
+                <div className="flex items-center space-x-3">
+                  <div className="w-3 h-3 status-secure rounded-full"></div>
+                  <span className="text-gray-200 font-bold uppercase tracking-wide">
+                    LAST SCAN: {(analysisResults.stats?.total_calls || analysisResults.summary?.total_calls || 0)} CALLS | {(analysisResults.stats?.anomaly_count || analysisResults.summary?.anomalies || 0)} THREATS
+                  </span>
+                </div>
               )}
             </div>
-            <div>VoIP Meta Tracer v1.0.0</div>
+            <div className="flex items-center space-x-3">
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
+              <span className="text-gray-400 uppercase tracking-wide">VOIP META TRACER v1.0.0</span>
+            </div>
           </div>
         </div>
       </footer>

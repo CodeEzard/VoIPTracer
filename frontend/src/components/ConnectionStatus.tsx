@@ -35,47 +35,59 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({ onConnectionChange 
 
   const getStatusIcon = () => {
     if (isChecking) {
-      return <RefreshCw className="h-4 w-4 animate-spin" />;
+      return <RefreshCw className="h-4 w-4 animate-spin text-yellow-400" />;
     }
     return isConnected ? (
-      <Wifi className="h-4 w-4 text-green-500" />
+      <Wifi className="h-4 w-4 text-green-400" />
     ) : (
-      <WifiOff className="h-4 w-4 text-red-500" />
+      <WifiOff className="h-4 w-4 text-red-400" />
     );
   };
 
   const getStatusText = () => {
-    if (isChecking) return 'Checking...';
-    if (isConnected === null) return 'Unknown';
-    return isConnected ? 'API Connected' : 'API Disconnected';
+    if (isChecking) return 'SCANNING...';
+    if (isConnected === null) return 'UNKNOWN';
+    return isConnected ? 'API ONLINE' : 'API OFFLINE';
   };
 
   const getStatusColor = () => {
-    if (isChecking) return 'text-yellow-600';
-    if (isConnected === null) return 'text-gray-600';
-    return isConnected ? 'text-green-600' : 'text-red-600';
+    if (isChecking) return 'text-yellow-400';
+    if (isConnected === null) return 'text-gray-400';
+    return isConnected ? 'text-green-400' : 'text-red-400';
   };
 
   return (
-    <div className="flex items-center space-x-2">
-      <div className={`flex items-center space-x-1 ${getStatusColor()}`}>
-        {getStatusIcon()}
-        <span className="text-sm font-medium">{getStatusText()}</span>
+    <div className="flex items-center space-x-3">
+      <div className={`flex items-center space-x-3 px-4 py-2 rounded-xl transition-all duration-300 cyber-glass border ${
+        isConnected 
+          ? 'border-green-400 bg-green-400/10' 
+          : 'border-red-400 bg-red-400/10'
+      }`}>
+        <div className="relative">
+          {getStatusIcon()}
+          {isConnected && (
+            <div className="absolute inset-0 w-4 h-4 bg-green-400 rounded-full animate-network-pulse opacity-30"></div>
+          )}
+        </div>
+        <div>
+          <span className={`text-sm font-bold font-mono uppercase tracking-wide ${getStatusColor()}`}>
+            {getStatusText()}
+          </span>
+          {lastChecked && (
+            <div className="text-xs text-green-300 font-mono">
+              {lastChecked.toLocaleTimeString()}
+            </div>
+          )}
+        </div>
       </div>
       
       {!isConnected && !isChecking && (
         <button
           onClick={checkConnection}
-          className="text-xs text-blue-600 hover:text-blue-800 underline"
+          className="px-3 py-1 text-xs font-bold text-red-400 bg-red-400/10 border border-red-400 rounded-lg hover:bg-red-400/20 hover:border-red-300 transition-all duration-300 transform hover:scale-105 font-mono uppercase tracking-wide"
         >
-          Retry
+          RETRY
         </button>
-      )}
-      
-      {lastChecked && (
-        <span className="text-xs text-gray-500">
-          {lastChecked.toLocaleTimeString()}
-        </span>
       )}
     </div>
   );
