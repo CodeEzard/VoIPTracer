@@ -1,42 +1,26 @@
 {
+  "version": 2,
   "builds": [
-    {
-      "src": "api/index.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "api/demo.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "api/upload-pcap.py",
-      "use": "@vercel/python"
-    },
     {
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "buildCommand": "npm run build",
-        "outputDirectory": "dist"
+        "buildCommand": "npm run build"
       }
     }
   ],
   "routes": [
     {
-      "src": "/api",
-      "dest": "/api/index"
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot))",
+      "dest": "/frontend/dist/$1"
     },
     {
-      "src": "/api/demo",
-      "dest": "/api/demo"
-    },
-    {
-      "src": "/api/upload-pcap",
-      "dest": "/api/upload-pcap"
+      "src": "/",
+      "dest": "/frontend/dist/index.html"
     },
     {
       "src": "/(.*)",
-      "dest": "/frontend/dist/$1"
+      "dest": "/frontend/dist/index.html"
     }
   ]
 }

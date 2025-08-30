@@ -3,6 +3,9 @@ import axios from 'axios';
 // Use environment variable for production deployment
 const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : '/api');
 
+// Temporary mock mode for Vercel deployment testing
+const MOCK_MODE = true;
+
 export interface ApiResponse {
   success: boolean;
   data?: any;
@@ -34,6 +37,17 @@ export interface AnalysisResults {
 
 // Health check
 export const checkApiHealth = async (): Promise<ApiResponse> => {
+  if (MOCK_MODE) {
+    return { 
+      success: true, 
+      data: { 
+        status: "healthy", 
+        message: "VoIP Tracer API is running (mock mode)", 
+        version: "1.0.0" 
+      } 
+    };
+  }
+  
   try {
     const response = await axios.get(`${API_BASE_URL}/`, { timeout: 5000 });
     return { success: true, data: response.data };
@@ -50,6 +64,48 @@ export const checkApiHealth = async (): Promise<ApiResponse> => {
 
 // Upload PCAP file
 export const uploadPcapFile = async (file: File): Promise<ApiResponse> => {
+  if (MOCK_MODE) {
+    // Simulate upload delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    return {
+      success: true,
+      data: {
+        calls: [
+          {
+            call_id: "uploaded-call-1",
+            from_uri: "sip:user1@uploaded.com",
+            to_uri: "sip:user2@uploaded.com",
+            duration: 32.5,
+            packets: 89,
+            anomaly: false
+          },
+          {
+            call_id: "uploaded-call-2",
+            from_uri: "sip:user3@uploaded.com",
+            to_uri: "sip:user4@uploaded.com",
+            duration: 156.2,
+            packets: 420,
+            anomaly: true
+          }
+        ],
+        summary: {
+          total_calls: 2,
+          anomalies: 1,
+          anomaly_rate: 0.5
+        },
+        stats: {
+          total_calls: 2,
+          anomaly_count: 1,
+          total_packets: 509,
+          total_duration: 188.7
+        },
+        message: `Successfully analyzed ${file.name} (mock mode)`,
+        packets_processed: 509
+      }
+    };
+  }
+
   try {
     const formData = new FormData();
     formData.append('file', file);
@@ -80,6 +136,53 @@ export const uploadPcapFile = async (file: File): Promise<ApiResponse> => {
 
 // Test with demo data
 export const runDemo = async (): Promise<ApiResponse> => {
+  if (MOCK_MODE) {
+    return {
+      success: true,
+      data: {
+        calls: [
+          {
+            call_id: "demo-call-1",
+            from_uri: "sip:alice@example.com",
+            to_uri: "sip:bob@example.com",
+            duration: 45.2,
+            packets: 120,
+            anomaly: false
+          },
+          {
+            call_id: "demo-call-2",
+            from_uri: "sip:charlie@example.com",
+            to_uri: "sip:diana@example.com",
+            duration: 12.8,
+            packets: 35,
+            anomaly: true
+          },
+          {
+            call_id: "demo-call-3",
+            from_uri: "sip:eve@example.com",
+            to_uri: "sip:frank@example.com",
+            duration: 89.1,
+            packets: 245,
+            anomaly: false
+          }
+        ],
+        summary: {
+          total_calls: 3,
+          anomalies: 1,
+          anomaly_rate: 0.33
+        },
+        stats: {
+          total_calls: 3,
+          anomaly_count: 1,
+          total_packets: 400,
+          total_duration: 147.1
+        },
+        message: "Demo analysis completed successfully (mock mode)",
+        packets_processed: 400
+      }
+    };
+  }
+
   try {
     const response = await axios.get(`${API_BASE_URL}/demo`, { timeout: 30000 });
     return { success: true, data: response.data };
