@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Use relative URLs in development to leverage Vite proxy
-const API_BASE_URL = import.meta.env.DEV ? '/api' : 'http://localhost:8002';
+// Use environment variable for production deployment
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : 'http://localhost:8002');
 
 export interface ApiResponse {
   success: boolean;
