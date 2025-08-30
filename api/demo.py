@@ -45,11 +45,18 @@ class handler(BaseHTTPRequestHandler):
                 "from_uri": f"sip:{from_number}@{from_domain}",
                 "to_uri": f"sip:{to_number}@{to_domain}",
                 "duration": duration,
+                "duration_s": duration,  # Frontend expects this
                 "packets": packets,
+                "total_pkts": packets,  # Frontend expects this
                 "anomaly": is_anomaly,
+                "is_anomaly": is_anomaly,  # Frontend expects this
+                "anomaly_score": round(random.uniform(0.8, 0.99), 3) if is_anomaly else round(random.uniform(0.0, 0.3), 3),
                 "codec": random.choice(['PCMU', 'PCMA', 'G729', 'iLBC', 'Opus']),
                 "jitter": round(random.uniform(0.1, 15.0), 2),
-                "packet_loss": round(random.uniform(0.0, 5.0), 2)
+                "packet_loss": round(random.uniform(0.0, 5.0), 2),
+                "num_dst_ips": random.randint(1, 5),
+                "source_ip": f"192.168.{random.randint(1,254)}.{random.randint(1,254)}",
+                "dest_ip": f"10.{random.randint(1,254)}.{random.randint(1,254)}.{random.randint(1,254)}"
             }
             
             calls.append(call)
