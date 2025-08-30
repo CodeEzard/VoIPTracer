@@ -1,0 +1,2 @@
+# No external dependencies required for basic API endpoints
+# Using only Python standard library for Vercel compatibility
