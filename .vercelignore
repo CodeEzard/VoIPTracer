@@ -1,5 +1,4 @@
-# Ignore Python backend files during frontend deployment
-api/
+# Ignore Python source files in src/ (not API)
 src/*.py
 tests/
 scripts/
@@ -24,7 +23,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Ignore build artifacts
+# Ignore build artifacts (but not API endpoints)
 dist/
 build/
 
