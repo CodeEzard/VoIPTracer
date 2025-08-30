@@ -51,9 +51,9 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({ onConnectionChange 
   };
 
   const getStatusColor = () => {
-    if (isChecking) return 'text-yellow-600';
-    if (isConnected === null) return 'text-gray-600';
-    return isConnected ? 'text-green-600' : 'text-red-600';
+    if (isChecking) return 'text-yellow-600 dark:text-yellow-400';
+    if (isConnected === null) return 'text-gray-600 dark:text-gray-400';
+    return isConnected ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
   };
 
   return (
@@ -66,14 +66,14 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({ onConnectionChange 
       {!isConnected && !isChecking && (
         <button
           onClick={checkConnection}
-          className="text-xs text-blue-600 hover:text-blue-800 underline"
+          className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline"
         >
           Retry
         </button>
       )}
       
       {lastChecked && (
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-gray-500 dark:text-gray-400">
           {lastChecked.toLocaleTimeString()}
         </span>
       )}
