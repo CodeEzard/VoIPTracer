@@ -11,12 +11,24 @@ export interface ApiResponse {
 
 export interface AnalysisResults {
   calls: any[];
-  anomalies: any[];
-  stats: {
+  summary?: {
+    total_calls: number;
+    anomalies: number;
+    anomaly_rate: number;
+  };
+  stats?: {
     total_calls: number;
     anomaly_count: number;
     total_packets: number;
     total_duration: number;
+  };
+  status?: string;
+  message?: string;
+  packets_processed?: number;
+  graph_stats?: {
+    nodes: number;
+    edges: number;
+    components: number;
   };
 }
 

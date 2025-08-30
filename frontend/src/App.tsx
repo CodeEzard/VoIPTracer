@@ -7,13 +7,20 @@ import ConnectionStatus from './components/ConnectionStatus';
 
 interface AnalysisResults {
   calls: any[];
-  anomalies: any[];
-  stats: {
+  summary?: {
+    total_calls: number;
+    anomalies: number;
+    anomaly_rate: number;
+  };
+  stats?: {
     total_calls: number;
     anomaly_count: number;
     total_packets: number;
     total_duration: number;
   };
+  status?: string;
+  message?: string;
+  packets_processed?: number;
 }
 
 function App() {
@@ -103,7 +110,7 @@ function App() {
             <div>
               {analysisResults && (
                 <span>
-                  Last Analysis: {analysisResults.stats.total_calls} calls, {analysisResults.stats.anomaly_count} anomalies
+                  Last Analysis: {(analysisResults.stats?.total_calls || analysisResults.summary?.total_calls || 0)} calls, {(analysisResults.stats?.anomaly_count || analysisResults.summary?.anomalies || 0)} anomalies
                 </span>
               )}
             </div>

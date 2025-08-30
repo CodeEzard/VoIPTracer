@@ -85,6 +85,7 @@ async def demo_analysis():
         return {
             "calls": results,
             "stats": stats,
+            "summary": stats,  # For backward compatibility
             "message": "Demo analysis completed successfully"
         }
         
@@ -209,10 +210,19 @@ def run_analysis_pipeline(pcap_path: str, limit: int = 1000) -> Dict[str, Any]:
             print(f"Warning: Graph building failed: {e}")
             graph_stats = {"nodes": 0, "edges": 0, "components": 0}
         
+        # Create standardized stats format
+        stats = {
+            "total_calls": len(calls_json),
+            "anomaly_count": anomaly_summary.get("anomalies", 0),
+            "total_packets": len(raw_packets),
+            "total_duration": sum(call.get("duration_s", 0) for call in calls_json)
+        }
+        
         return {
             "status": "success",
             "calls": calls_json,
             "summary": anomaly_summary,
+            "stats": stats,  # Standardized format for frontend
             "graph_stats": graph_stats,
             "packets_processed": len(raw_packets)
         }

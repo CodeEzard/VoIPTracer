@@ -65,7 +65,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
       const result = await uploadPcapFile(selectedFile);
       
       if (result.success) {
-        onAnalysisComplete(result.data);
+        if (result.data?.status === 'no_voip_packets') {
+          setError(result.data.message || 'No VoIP packets found in the uploaded file. Please check that your PCAP contains SIP, RTP, or other VoIP traffic.');
+        } else if (result.data?.status === 'no_calls') {
+          setError(result.data.message || 'No complete VoIP calls found. The file may contain partial or fragmented VoIP data.');
+        } else {
+          onAnalysisComplete(result.data);
+        }
       } else {
         setError(result.error || 'Upload failed');
       }
@@ -85,7 +91,11 @@ const FileUpload: React.FC<FileUploadProps> = ({
       const result = await runDemo();
       
       if (result.success) {
-        onAnalysisComplete(result.data);
+        if (result.data?.status === 'no_voip_packets') {
+          setError('Demo data failed to generate VoIP packets. Please contact support.');
+        } else {
+          onAnalysisComplete(result.data);
+        }
       } else {
         setError(result.error || 'Demo failed');
       }

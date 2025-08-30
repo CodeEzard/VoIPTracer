@@ -18,33 +18,41 @@ const Dashboard: React.FC<DashboardProps> = ({ results, onViewResults }) => {
   }
 
   const stats = results.stats || {};
-  const anomalyRate = stats.total_calls > 0 ? (stats.anomaly_count / stats.total_calls * 100) : 0;
+  const summary = results.summary || {};
+  
+  // Handle both API response formats
+  const totalCalls = stats.total_calls || summary.total_calls || 0;
+  const anomalyCount = stats.anomaly_count || summary.anomalies || 0;
+  const totalPackets = stats.total_packets || results.packets_processed || 0;
+  const totalDuration = stats.total_duration || 0;
+  
+  const anomalyRate = totalCalls > 0 ? (anomalyCount / totalCalls * 100) : 0;
 
   const statCards = [
     {
       title: 'Total Calls',
-      value: stats.total_calls || 0,
+      value: totalCalls,
       icon: Phone,
       color: 'blue',
       change: '+12%'
     },
     {
       title: 'Anomalies Detected',
-      value: stats.anomaly_count || 0,
+      value: anomalyCount,
       icon: AlertTriangle,
       color: 'red',
       change: `${anomalyRate.toFixed(1)}%`
     },
     {
       title: 'Total Packets',
-      value: (stats.total_packets || 0).toLocaleString(),
+      value: totalPackets.toLocaleString(),
       icon: Activity,
       color: 'green',
       change: '+5%'
     },
     {
       title: 'Total Duration',
-      value: `${(stats.total_duration || 0).toFixed(1)}s`,
+      value: `${totalDuration.toFixed(1)}s`,
       icon: Clock,
       color: 'purple',
       change: '+8%'
@@ -108,13 +116,13 @@ const Dashboard: React.FC<DashboardProps> = ({ results, onViewResults }) => {
       </div>
 
       {/* Anomaly Alert */}
-      {stats.anomaly_count > 0 && (
+      {anomalyCount > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-6">
           <div className="flex items-start">
             <AlertTriangle className="h-6 w-6 text-red-600 mt-1 mr-4 flex-shrink-0" />
             <div className="flex-1">
               <h3 className="text-lg font-medium text-red-800">
-                {stats.anomaly_count} Anomal{stats.anomaly_count === 1 ? 'y' : 'ies'} Detected
+                {anomalyCount} Anomal{anomalyCount === 1 ? 'y' : 'ies'} Detected
               </h3>
               <p className="text-red-700 mt-1">
                 {anomalyRate.toFixed(1)}% of calls show suspicious patterns. Review the detailed results for more information.
